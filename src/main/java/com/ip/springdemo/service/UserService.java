@@ -3,7 +3,9 @@ package com.ip.springdemo.service;
 import com.ip.springdemo.config.Constants;
 import com.ip.springdemo.domain.Authority;
 import com.ip.springdemo.domain.User;
+import com.ip.springdemo.domain.UserAuthority;
 import com.ip.springdemo.repository.AuthorityRepository;
+import com.ip.springdemo.repository.UserAuthorityRepository;
 import com.ip.springdemo.repository.UserRepository;
 import com.ip.springdemo.security.AuthoritiesConstants;
 import com.ip.springdemo.security.SecurityUtils;
@@ -13,6 +15,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -39,17 +42,21 @@ public class UserService {
 
     private final AuthorityRepository authorityRepository;
 
+    private final UserAuthorityRepository userAuthorityRepository;
+
     private final CacheManager cacheManager;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
+        UserAuthorityRepository userAuthorityRepository,
         CacheManager cacheManager
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.userAuthorityRepository = userAuthorityRepository;
         this.cacheManager = cacheManager;
     }
 
@@ -126,8 +133,19 @@ public class UserService {
         newUser.setActivated(false);
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
-        Set<Authority> authorities = new HashSet<>();
-        authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
+        Set<UserAuthority> authorities = new HashSet<>();
+        List<Authority> authoritiesList = authorityRepository.findByName(AuthoritiesConstants.USER);
+        Stream
+            .of(authoritiesList)
+            .filter(Objects::nonNull)
+            .flatMap(Collection::stream)
+            .forEach(authority -> {
+                UserAuthority userAuthority = new UserAuthority();
+                userAuthority.setAuthorityName(authority.getName());
+                userAuthority.setAuthorityId(authority.getId());
+                authorities.add(userAuthority);
+            });
+        //        userAuthorityRepository.findById(AuthoritiesConstants.USER).ifPresent(userAuthorities::add);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
         this.clearUserCaches(newUser);
@@ -165,13 +183,28 @@ public class UserService {
         user.setResetDate(Instant.now());
         user.setActivated(true);
         if (userDTO.getAuthorities() != null) {
-            Set<Authority> authorities = userDTO
-                .getAuthorities()
+            Set<String> authoritiesStr = userDTO.getAuthorities();
+            Set<UserAuthority> authorities = new HashSet<>();
+            authoritiesStr
                 .stream()
-                .map(authorityRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+                .forEach(s -> {
+                    Optional<Authority> authorityOp = authorityRepository.findOneByName(s);
+                    if (authorityOp.isPresent()) {
+                        UserAuthority userAuthority = new UserAuthority();
+                        Authority auth = authorityOp.get();
+                        userAuthority.setAuthorityId(auth.getId());
+                        userAuthority.setAuthorityName(auth.getName());
+                        authorities.add(userAuthority);
+                    }
+                });
+            //
+            //            Set<UserAuthority> authorities = userDTO
+            //                .getAuthorities()
+            //                .stream()
+            //                .map(userAuthorityRepository::findById)
+            //                .filter(Optional::isPresent)
+            //                .map(Optional::get)
+            //                .collect(Collectors.toSet());
             user.setAuthorities(authorities);
         }
         userRepository.save(user);
@@ -202,15 +235,15 @@ public class UserService {
                 user.setImageUrl(userDTO.getImageUrl());
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
-                Set<Authority> managedAuthorities = user.getAuthorities();
-                managedAuthorities.clear();
-                userDTO
-                    .getAuthorities()
-                    .stream()
-                    .map(authorityRepository::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(managedAuthorities::add);
+                //                Set<Authority> managedAuthorities = user.getAuthorities();
+                //                managedAuthorities.clear();
+                //                userDTO
+                //                    .getAuthorities()
+                //                    .stream()
+                //                    .map(authorityRepository::findById)
+                //                    .filter(Optional::isPresent)
+                //                    .map(Optional::get);
+                ////                    .forEach(managedAuthorities::add);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;
@@ -288,7 +321,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        Optional<User> optionalUser = SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        return optionalUser;
     }
 
     /**

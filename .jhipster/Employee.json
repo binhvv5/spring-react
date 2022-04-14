@@ -1,0 +1,40 @@
+{
+  "changelogDate": "20220325040343",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "empName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "empBirthday",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "empCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "empGender",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "empEmail",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "empJoinDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "isOnWorking",
+      "fieldType": "Boolean"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Employee",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}

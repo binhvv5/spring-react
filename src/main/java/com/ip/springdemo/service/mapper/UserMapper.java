@@ -2,6 +2,7 @@ package com.ip.springdemo.service.mapper;
 
 import com.ip.springdemo.domain.Authority;
 import com.ip.springdemo.domain.User;
+import com.ip.springdemo.domain.UserAuthority;
 import com.ip.springdemo.service.dto.AdminUserDTO;
 import com.ip.springdemo.service.dto.UserDTO;
 import java.util.*;
@@ -53,28 +54,10 @@ public class UserMapper {
             user.setImageUrl(userDTO.getImageUrl());
             user.setActivated(userDTO.isActivated());
             user.setLangKey(userDTO.getLangKey());
-            Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
-            user.setAuthorities(authorities);
+            //            Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
+            //            user.setAuthorities(authorities);
             return user;
         }
-    }
-
-    private Set<Authority> authoritiesFromStrings(Set<String> authoritiesAsString) {
-        Set<Authority> authorities = new HashSet<>();
-
-        if (authoritiesAsString != null) {
-            authorities =
-                authoritiesAsString
-                    .stream()
-                    .map(string -> {
-                        Authority auth = new Authority();
-                        auth.setName(string);
-                        return auth;
-                    })
-                    .collect(Collectors.toSet());
-        }
-
-        return authorities;
     }
 
     public User userFromId(Long id) {

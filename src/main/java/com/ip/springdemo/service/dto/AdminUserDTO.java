@@ -1,8 +1,8 @@
 package com.ip.springdemo.service.dto;
 
 import com.ip.springdemo.config.Constants;
-import com.ip.springdemo.domain.Authority;
 import com.ip.springdemo.domain.User;
+import com.ip.springdemo.domain.UserAuthority;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,7 +65,7 @@ public class AdminUserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+        this.authorities = user.getAuthorities().stream().map(UserAuthority::getAuthorityName).collect(Collectors.toSet());
     }
 
     public Long getId() {

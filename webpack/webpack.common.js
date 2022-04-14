@@ -77,7 +77,7 @@ module.exports = async options => {
           /*
        ,
        Disabled due to https://github.com/jhipster/generator-jhipster/issues/16116
-       Can be enabled with @reduxjs/toolkit@>1.6.1 
+       Can be enabled with @reduxjs/toolkit@>1.6.1
       {
         enforce: 'pre',
         test: /\.jsx?$/,
@@ -142,6 +142,7 @@ module.exports = async options => {
           output: {
             groupBy: [
               { pattern: './src/main/webapp/i18n/en/*.json', fileName: './i18n/en.json' },
+              { pattern: './src/main/webapp/i18n/vi/*.json', fileName: './i18n/vi.json' },
               // jhipster-needle-i18n-language-webpack - JHipster will add/remove languages in this array
             ],
           },

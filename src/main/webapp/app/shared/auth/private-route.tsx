@@ -12,8 +12,9 @@ export const PrivateRouteComponent = ({ component: Component, hasAnyAuthorities 
   const isAuthenticated = useAppSelector(state => state.authentication.isAuthenticated);
   const sessionHasBeenFetched = useAppSelector(state => state.authentication.sessionHasBeenFetched);
   const account = useAppSelector(state => state.authentication.account);
+  console.log(account);
   const isAuthorized = hasAnyAuthority(account.authorities, hasAnyAuthorities);
-
+  console.log(isAuthorized);
   const checkAuthorities = props =>
     isAuthorized ? (
       <ErrorBoundary>
